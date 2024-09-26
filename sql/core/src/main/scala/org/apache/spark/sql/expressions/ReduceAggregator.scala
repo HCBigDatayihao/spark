@@ -17,8 +17,10 @@
 
 package org.apache.spark.sql.expressions
 
+import org.apache.spark.SparkException
 import org.apache.spark.sql.Encoder
-import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder
+import org.apache.spark.sql.catalyst.encoders.AgnosticEncoder
+import org.apache.spark.sql.catalyst.encoders.AgnosticEncoders.{PrimitiveBooleanEncoder, ProductEncoder}
 
 /**
  * An aggregator that uses a single associative and commutative reduce function. This reduce
@@ -32,12 +34,23 @@ private[sql] class ReduceAggregator[T: Encoder](func: (T, T) => T)
 
   @transient private val encoder = implicitly[Encoder[T]]
 
-  override def zero: (Boolean, T) = (false, null.asInstanceOf[T])
+  private val _zero = encoder.clsTag.runtimeClass match {
+    case java.lang.Boolean.TYPE => false
+    case java.lang.Byte.TYPE => 0.toByte
+    case java.lang.Short.TYPE => 0.toShort
+    case java.lang.Integer.TYPE => 0
+    case java.lang.Long.TYPE => 0L
+    case java.lang.Float.TYPE => 0f
+    case java.lang.Double.TYPE => 0d
+    case _ => null
+  }
 
-  override def bufferEncoder: Encoder[(Boolean, T)] =
-    ExpressionEncoder.tuple(
-      ExpressionEncoder[Boolean](),
-      encoder.asInstanceOf[ExpressionEncoder[T]])
+  override def zero: (Boolean, T) = (false, _zero.asInstanceOf[T])
+
+  override def bufferEncoder: Encoder[(Boolean, T)] = {
+    ProductEncoder.tuple(Seq(PrimitiveBooleanEncoder, encoder.asInstanceOf[AgnosticEncoder[T]]))
+      .asInstanceOf[Encoder[(Boolean, T)]]
+  }
 
   override def outputEncoder: Encoder[T] = encoder
 
@@ -61,8 +74,14 @@ private[sql] class ReduceAggregator[T: Encoder](func: (T, T) => T)
 
   override def finish(reduction: (Boolean, T)): T = {
     if (!reduction._1) {
-      throw new IllegalStateException("ReduceAggregator requires at least one input row")
+      throw SparkException.internalError("ReduceAggregator requires at least one input row")
     }
     reduction._2
+  }
+}
+
+private[sql] object ReduceAggregator {
+  def apply[T: Encoder](f: AnyRef): ReduceAggregator[T] = {
+    new ReduceAggregator(f.asInstanceOf[(T, T) => T])
   }
 }

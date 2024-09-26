@@ -122,7 +122,7 @@ private[worker] class WorkerArguments(args: Array[String], conf: SparkConf) {
   /**
    * Print usage and exit JVM with the given exit code.
    */
-  def printUsageAndExit(exitCode: Int) {
+  def printUsageAndExit(exitCode: Int): Unit = {
     // scalastyle:off println
     System.err.println(
       "Usage: Worker [options] <master>\n" +
@@ -148,20 +148,13 @@ private[worker] class WorkerArguments(args: Array[String], conf: SparkConf) {
   }
 
   def inferDefaultMemory(): Int = {
-    val ibmVendor = System.getProperty("java.vendor").contains("IBM")
     var totalMb = 0
     try {
       // scalastyle:off classforname
       val bean = ManagementFactory.getOperatingSystemMXBean()
-      if (ibmVendor) {
-        val beanClass = Class.forName("com.ibm.lang.management.OperatingSystemMXBean")
-        val method = beanClass.getDeclaredMethod("getTotalPhysicalMemory")
-        totalMb = (method.invoke(bean).asInstanceOf[Long] / 1024 / 1024).toInt
-      } else {
-        val beanClass = Class.forName("com.sun.management.OperatingSystemMXBean")
-        val method = beanClass.getDeclaredMethod("getTotalPhysicalMemorySize")
-        totalMb = (method.invoke(bean).asInstanceOf[Long] / 1024 / 1024).toInt
-      }
+      val beanClass = Class.forName("com.sun.management.OperatingSystemMXBean")
+      val method = beanClass.getDeclaredMethod("getTotalMemorySize")
+      totalMb = (method.invoke(bean).asInstanceOf[Long] / 1024 / 1024).toInt
       // scalastyle:on classforname
     } catch {
       case e: Exception =>

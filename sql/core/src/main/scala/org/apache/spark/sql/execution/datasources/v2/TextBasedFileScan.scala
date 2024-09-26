@@ -16,24 +16,18 @@
  */
 package org.apache.spark.sql.execution.datasources.v2
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.compress.CompressionCodecFactory
 
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.execution.datasources.PartitioningAwareFileIndex
-import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.util.CaseInsensitiveStringMap
 import org.apache.spark.util.Utils
 
 abstract class TextBasedFileScan(
     sparkSession: SparkSession,
-    fileIndex: PartitioningAwareFileIndex,
-    readDataSchema: StructType,
-    readPartitionSchema: StructType,
-    options: CaseInsensitiveStringMap)
-  extends FileScan(sparkSession, fileIndex, readDataSchema, readPartitionSchema) {
+    options: CaseInsensitiveStringMap) extends FileScan {
   @transient private lazy val codecFactory: CompressionCodecFactory = new CompressionCodecFactory(
     sparkSession.sessionState.newHadoopConfWithOptions(options.asScala.toMap))
 

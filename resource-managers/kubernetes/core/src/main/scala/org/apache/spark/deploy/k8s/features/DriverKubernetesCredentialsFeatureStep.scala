@@ -19,7 +19,7 @@ package org.apache.spark.deploy.k8s.features
 import java.io.File
 import java.nio.charset.StandardCharsets
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 import com.google.common.io.{BaseEncoding, Files}
 import io.fabric8.kubernetes.api.model.{ContainerBuilder, HasMetadata, PodBuilder, Secret, SecretBuilder}
@@ -42,7 +42,7 @@ private[spark] class DriverKubernetesCredentialsFeatureStep(kubernetesConf: Kube
     s"$KUBERNETES_AUTH_DRIVER_MOUNTED_CONF_PREFIX.$CLIENT_CERT_FILE_CONF_SUFFIX")
   private val maybeMountedCaCertFile = kubernetesConf.getOption(
     s"$KUBERNETES_AUTH_DRIVER_MOUNTED_CONF_PREFIX.$CA_CERT_FILE_CONF_SUFFIX")
-  private val driverServiceAccount = kubernetesConf.get(KUBERNETES_SERVICE_ACCOUNT_NAME)
+  private val driverServiceAccount = kubernetesConf.get(KUBERNETES_DRIVER_SERVICE_ACCOUNT_NAME)
 
   private val oauthTokenBase64 = kubernetesConf
     .getOption(s"$KUBERNETES_AUTH_DRIVER_CONF_PREFIX.$OAUTH_TOKEN_CONF_SUFFIX")
@@ -202,6 +202,7 @@ private[spark] class DriverKubernetesCredentialsFeatureStep(kubernetesConf: Kube
       .withNewMetadata()
         .withName(driverCredentialsSecretName)
         .endMetadata()
+      .withImmutable(true)
       .withData(allSecretData.asJava)
       .build()
   }

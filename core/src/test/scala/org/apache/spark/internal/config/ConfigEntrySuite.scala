@@ -94,6 +94,8 @@ class ConfigEntrySuite extends SparkFunSuite {
     assert(conf.get(bytes) === 1024L)
     conf.set(bytes.key, "1k")
     assert(conf.get(bytes) === 1L)
+    conf.set(bytes.key, "2048")
+    assert(conf.get(bytes) === 2048)
   }
 
   test("conf entry: regex") {
@@ -155,30 +157,33 @@ class ConfigEntrySuite extends SparkFunSuite {
     val e1 = intercept[IllegalArgumentException] {
       conf.get(entry)
     }
-    assert(e1.getMessage == "value must be non-negative")
+    assert(e1.getMessage ===
+      s"'-1' in ${testKey("checkValue")} is invalid. value must be non-negative")
 
     val e2 = intercept[IllegalArgumentException] {
       createEntry(-1)
     }
-    assert(e2.getMessage == "value must be non-negative")
+    assert(e2.getMessage ===
+      s"'-1' in ${testKey("checkValue")} is invalid. value must be non-negative")
   }
 
   test("conf entry: valid values check") {
     val conf = new SparkConf()
-    val enum = ConfigBuilder(testKey("enum"))
+    val enumConf = ConfigBuilder(testKey("enum"))
       .stringConf
       .checkValues(Set("a", "b", "c"))
       .createWithDefault("a")
-    assert(conf.get(enum) === "a")
+    assert(conf.get(enumConf) === "a")
 
-    conf.set(enum, "b")
-    assert(conf.get(enum) === "b")
+    conf.set(enumConf, "b")
+    assert(conf.get(enumConf) === "b")
 
-    conf.set(enum, "d")
+    conf.set(enumConf, "d")
     val enumError = intercept[IllegalArgumentException] {
-      conf.get(enum)
+      conf.get(enumConf)
     }
-    assert(enumError.getMessage === s"The value of ${enum.key} should be one of a, b, c, but was d")
+    assert(enumError.getMessage ===
+      s"The value of ${enumConf.key} should be one of a, b, c, but was d")
   }
 
   test("conf entry: conversion error") {
@@ -189,12 +194,6 @@ class ConfigEntrySuite extends SparkFunSuite {
       conf.get(conversionTest)
     }
     assert(conversionError.getMessage === s"${conversionTest.key} should be double, but was abc")
-  }
-
-  test("default value handling is null-safe") {
-    val conf = new SparkConf()
-    val stringConf = ConfigBuilder(testKey("string")).stringConf.createWithDefault(null)
-    assert(conf.get(stringConf) === null)
   }
 
   test("variable expansion of spark config entries") {
@@ -215,7 +214,7 @@ class ConfigEntrySuite extends SparkFunSuite {
 
     val refConf = ConfigBuilder(testKey("configReferenceTest"))
       .stringConf
-      .createWithDefault(null)
+      .createWithDefault("")
 
     def ref(entry: ConfigEntry[_]): String = "${" + entry.key + "}"
 
@@ -245,12 +244,6 @@ class ConfigEntrySuite extends SparkFunSuite {
     // Make sure SparkConf's env override works.
     conf.set(refConf, "${env:ENV1}")
     assert(conf.get(refConf) === env("ENV1"))
-
-    // Conf with null default value is not expanded.
-    val nullConf = ConfigBuilder(testKey("nullString"))
-      .stringConf
-      .createWithDefault(null)
-    testEntryRef(nullConf, ref(nullConf))
   }
 
   test("conf entry : default function") {

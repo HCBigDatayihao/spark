@@ -19,8 +19,8 @@ package org.apache.spark.mllib.feature
 
 import java.lang.{Iterable => JavaIterable}
 
-import scala.collection.JavaConverters._
 import scala.collection.mutable
+import scala.jdk.CollectionConverters._
 
 import org.apache.spark.SparkException
 import org.apache.spark.annotation.Since
@@ -98,7 +98,7 @@ class HashingTF(val numFeatures: Int) extends Serializable {
     Vectors.sparse(numFeatures, seq)
   }
 
-  private[spark] def transformImpl(document: Iterable[_]): Seq[(Int, Double)] = {
+  private def transformImpl(document: Iterable[_]): Seq[(Int, Double)] = {
     val termFrequencies = mutable.HashMap.empty[Int, Double]
     val setTF = if (binary) (i: Int) => 1.0 else (i: Int) => termFrequencies.getOrElse(i, 0.0) + 1.0
     val hashFunc: Any => Int = getHashFunction

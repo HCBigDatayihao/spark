@@ -21,7 +21,9 @@ import scala.collection.mutable.Map
 
 import org.apache.spark.{LocalSparkContext, SparkConf, SparkContext, SparkFunSuite}
 import org.apache.spark.executor.ExecutorMetrics
+import org.apache.spark.resource.ResourceProfile
 import org.apache.spark.scheduler.SchedulingMode.SchedulingMode
+import org.apache.spark.status.api.v1.ThreadStackTrace
 import org.apache.spark.storage.BlockManagerId
 import org.apache.spark.util.AccumulatorV2
 
@@ -67,11 +69,13 @@ private class DummyExternalClusterManager extends ExternalClusterManager {
 
 private class DummySchedulerBackend extends SchedulerBackend {
   var initialized = false
-  def start() {}
-  def stop() {}
-  def reviveOffers() {}
+  def start(): Unit = {}
+  def stop(): Unit = {}
+  def reviveOffers(): Unit = {}
   def defaultParallelism(): Int = 1
-  def maxNumConcurrentTasks(): Int = 0
+  def maxNumConcurrentTasks(rp: ResourceProfile): Int = 0
+
+  override def getTaskThreadDump(taskId: Long, executorId: String): Option[ThreadStackTrace] = None
 }
 
 private class DummyTaskScheduler extends TaskScheduler {
@@ -79,9 +83,8 @@ private class DummyTaskScheduler extends TaskScheduler {
   override def schedulingMode: SchedulingMode = SchedulingMode.FIFO
   override def rootPool: Pool = new Pool("", schedulingMode, 0, 0)
   override def start(): Unit = {}
-  override def stop(): Unit = {}
+  override def stop(exitCode: Int): Unit = {}
   override def submitTasks(taskSet: TaskSet): Unit = {}
-  override def cancelTasks(stageId: Int, interruptThread: Boolean): Unit = {}
   override def killTaskAttempt(
     taskId: Long, interruptThread: Boolean, reason: String): Boolean = false
   override def killAllTaskAttempts(
@@ -97,4 +100,9 @@ private class DummyTaskScheduler extends TaskScheduler {
       accumUpdates: Array[(Long, Seq[AccumulatorV2[_, _]])],
       blockManagerId: BlockManagerId,
       executorMetrics: Map[(Int, Int), ExecutorMetrics]): Boolean = true
+  override def executorDecommission(
+    executorId: String,
+    decommissionInfo: ExecutorDecommissionInfo): Unit = {}
+  override def getExecutorDecommissionState(
+    executorId: String): Option[ExecutorDecommissionState] = None
 }

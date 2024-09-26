@@ -20,20 +20,19 @@ import java.io.File
 import java.nio.charset.StandardCharsets.UTF_8
 import java.security.PrivilegedExceptionAction
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 import com.google.common.io.Files
 import io.fabric8.kubernetes.api.model.{ConfigMap, Secret}
 import org.apache.commons.codec.binary.Base64
 import org.apache.hadoop.io.Text
-import org.apache.hadoop.security.{Credentials, UserGroupInformation}
+import org.apache.hadoop.security.UserGroupInformation
 
 import org.apache.spark.{SparkConf, SparkFunSuite}
 import org.apache.spark.deploy.SparkHadoopUtil
 import org.apache.spark.deploy.k8s._
 import org.apache.spark.deploy.k8s.Config._
 import org.apache.spark.deploy.k8s.Constants._
-import org.apache.spark.deploy.k8s.submit.JavaMainAppResource
 import org.apache.spark.internal.config._
 import org.apache.spark.util.Utils
 

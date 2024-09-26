@@ -99,13 +99,13 @@ class OrcReadSchemaSuite
 
   override val format: String = "orc"
 
-  override def beforeAll() {
+  override def beforeAll(): Unit = {
     super.beforeAll()
-    originalConf = spark.conf.get(SQLConf.ORC_VECTORIZED_READER_ENABLED)
+    originalConf = sqlConf.getConf(SQLConf.ORC_VECTORIZED_READER_ENABLED)
     spark.conf.set(SQLConf.ORC_VECTORIZED_READER_ENABLED.key, "false")
   }
 
-  override def afterAll() {
+  override def afterAll(): Unit = {
     spark.conf.set(SQLConf.ORC_VECTORIZED_READER_ENABLED.key, originalConf)
     super.afterAll()
   }
@@ -124,13 +124,13 @@ class VectorizedOrcReadSchemaSuite
 
   override val format: String = "orc"
 
-  override def beforeAll() {
+  override def beforeAll(): Unit = {
     super.beforeAll()
-    originalConf = spark.conf.get(SQLConf.ORC_VECTORIZED_READER_ENABLED)
+    originalConf = sqlConf.getConf(SQLConf.ORC_VECTORIZED_READER_ENABLED)
     spark.conf.set(SQLConf.ORC_VECTORIZED_READER_ENABLED.key, "true")
   }
 
-  override def afterAll() {
+  override def afterAll(): Unit = {
     spark.conf.set(SQLConf.ORC_VECTORIZED_READER_ENABLED.key, originalConf)
     super.afterAll()
   }
@@ -161,17 +161,19 @@ class ParquetReadSchemaSuite
   with HideColumnInTheMiddleTest
   with AddNestedColumnTest
   with HideNestedColumnTest
-  with ChangePositionTest {
+  with ChangePositionTest
+  with IntegralTypeTest
+  with ToDoubleTypeTest {
 
   override val format: String = "parquet"
 
-  override def beforeAll() {
+  override def beforeAll(): Unit = {
     super.beforeAll()
-    originalConf = spark.conf.get(SQLConf.PARQUET_VECTORIZED_READER_ENABLED)
+    originalConf = sqlConf.getConf(SQLConf.PARQUET_VECTORIZED_READER_ENABLED)
     spark.conf.set(SQLConf.PARQUET_VECTORIZED_READER_ENABLED.key, "false")
   }
 
-  override def afterAll() {
+  override def afterAll(): Unit = {
     spark.conf.set(SQLConf.PARQUET_VECTORIZED_READER_ENABLED.key, originalConf)
     super.afterAll()
   }
@@ -183,17 +185,19 @@ class VectorizedParquetReadSchemaSuite
   with HideColumnInTheMiddleTest
   with AddNestedColumnTest
   with HideNestedColumnTest
-  with ChangePositionTest {
+  with ChangePositionTest
+  with IntegralTypeTest
+  with ToDoubleTypeTest {
 
   override val format: String = "parquet"
 
-  override def beforeAll() {
+  override def beforeAll(): Unit = {
     super.beforeAll()
-    originalConf = spark.conf.get(SQLConf.PARQUET_VECTORIZED_READER_ENABLED)
+    originalConf = sqlConf.getConf(SQLConf.PARQUET_VECTORIZED_READER_ENABLED)
     spark.conf.set(SQLConf.PARQUET_VECTORIZED_READER_ENABLED.key, "true")
   }
 
-  override def afterAll() {
+  override def afterAll(): Unit = {
     spark.conf.set(SQLConf.PARQUET_VECTORIZED_READER_ENABLED.key, originalConf)
     super.afterAll()
   }
@@ -205,17 +209,19 @@ class MergedParquetReadSchemaSuite
   with HideColumnInTheMiddleTest
   with AddNestedColumnTest
   with HideNestedColumnTest
-  with ChangePositionTest {
+  with ChangePositionTest
+  with IntegralTypeTest
+  with ToDoubleTypeTest {
 
   override val format: String = "parquet"
 
-  override def beforeAll() {
+  override def beforeAll(): Unit = {
     super.beforeAll()
-    originalConf = spark.conf.get(SQLConf.PARQUET_SCHEMA_MERGING_ENABLED)
+    originalConf = sqlConf.getConf(SQLConf.PARQUET_SCHEMA_MERGING_ENABLED)
     spark.conf.set(SQLConf.PARQUET_SCHEMA_MERGING_ENABLED.key, "true")
   }
 
-  override def afterAll() {
+  override def afterAll(): Unit = {
     spark.conf.set(SQLConf.PARQUET_SCHEMA_MERGING_ENABLED.key, originalConf)
     super.afterAll()
   }

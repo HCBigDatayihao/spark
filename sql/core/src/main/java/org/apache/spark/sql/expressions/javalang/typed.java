@@ -25,7 +25,6 @@ import org.apache.spark.sql.execution.aggregate.TypedSumDouble;
 import org.apache.spark.sql.execution.aggregate.TypedSumLong;
 
 /**
- * :: Experimental ::
  * Type-safe functions available for {@link org.apache.spark.sql.Dataset} operations in Java.
  *
  * Scala users should use {@link org.apache.spark.sql.expressions.scalalang.typed}.
@@ -33,7 +32,7 @@ import org.apache.spark.sql.execution.aggregate.TypedSumLong;
  * @since 2.0.0
  * @deprecated As of release 3.0.0, please use the untyped builtin aggregate functions.
  */
-@Deprecated
+@Deprecated(since = "3.0.0")
 public class typed {
   // Note: make sure to keep in sync with typed.scala
 

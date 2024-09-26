@@ -21,7 +21,6 @@ import org.apache.spark.sql._
 import org.apache.spark.sql.execution.aggregate._
 
 /**
- * :: Experimental ::
  * Type-safe functions available for `Dataset` operations in Scala.
  *
  * Java users should use [[org.apache.spark.sql.expressions.javalang.typed]].
@@ -39,13 +38,6 @@ object typed {
   // use boxed primitive types.
   // For example, avg in the Scala version returns Scala primitive Double, whose bytecode
   // signature is just a java.lang.Object; avg in the Java version returns java.lang.Double.
-
-  // TODO: This is pretty hacky. Maybe we should have an object for implicit encoders.
-  private val implicits = new SQLImplicits {
-    override protected def _sqlContext: SQLContext = null
-  }
-
-  import implicits._
 
   /**
    * Average aggregate function.

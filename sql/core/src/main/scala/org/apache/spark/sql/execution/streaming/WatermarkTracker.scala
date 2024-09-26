@@ -21,7 +21,8 @@ import java.util.Locale
 
 import scala.collection.mutable
 
-import org.apache.spark.internal.Logging
+import org.apache.spark.internal.{Logging, MDC}
+import org.apache.spark.internal.LogKeys._
 import org.apache.spark.sql.RuntimeConfig
 import org.apache.spark.sql.execution.SparkPlan
 import org.apache.spark.sql.internal.SQLConf
@@ -63,7 +64,7 @@ case object MinWatermark extends MultipleWatermarkPolicy {
 }
 
 /**
- * Policy to choose the *min* of the operator watermark values as the global watermark value. So the
+ * Policy to choose the *max* of the operator watermark values as the global watermark value. So the
  * global watermark will advance if any of the individual operator watermarks has advanced.
  * In other words, in a streaming query with multiple input streams and watermarks defined on all
  * of them, the global watermark will advance as fast as the fastest input. So if there is watermark
@@ -108,13 +109,14 @@ case class WatermarkTracker(policy: MultipleWatermarkPolicy) extends Logging {
         }
     }
 
-    // Update the global watermark to the minimum of all watermark nodes.
-    // This is the safest option, because only the global watermark is fault-tolerant. Making
-    // it the minimum of all individual watermarks guarantees it will never advance past where
-    // any individual watermark operator would be if it were in a plan by itself.
+    // Update the global watermark accordingly to the chosen policy. To find all available policies
+    // and their semantics, please check the comments of
+    // `org.apache.spark.sql.execution.streaming.MultipleWatermarkPolicy` implementations.
     val chosenGlobalWatermark = policy.chooseGlobalWatermark(operatorToWatermarkMap.values.toSeq)
     if (chosenGlobalWatermark > globalWatermarkMs) {
-      logInfo(s"Updating event-time watermark from $globalWatermarkMs to $chosenGlobalWatermark ms")
+      logInfo(log"Updating event-time watermark from " +
+        log"${MDC(GLOBAL_WATERMARK, globalWatermarkMs)} " +
+        log"to ${MDC(CHOSEN_WATERMARK, chosenGlobalWatermark)} ms")
       globalWatermarkMs = chosenGlobalWatermark
     } else {
       logDebug(s"Event time watermark didn't move: $chosenGlobalWatermark < $globalWatermarkMs")
@@ -133,7 +135,8 @@ object WatermarkTracker {
     // saved in the checkpoint (e.g., old checkpoints), then the default `min` policy is enforced
     // through defaults specified in OffsetSeqMetadata.setSessionConf().
     val policyName = conf.get(
-      SQLConf.STREAMING_MULTIPLE_WATERMARK_POLICY, MultipleWatermarkPolicy.DEFAULT_POLICY_NAME)
+      SQLConf.STREAMING_MULTIPLE_WATERMARK_POLICY.key,
+      MultipleWatermarkPolicy.DEFAULT_POLICY_NAME)
     new WatermarkTracker(MultipleWatermarkPolicy(policyName))
   }
 }

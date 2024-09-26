@@ -17,7 +17,9 @@
 
 package org.apache.spark.ml.util
 
+import org.apache.spark.ml.attribute._
 import org.apache.spark.ml.linalg.VectorUDT
+import org.apache.spark.sql.catalyst.util.AttributeNameParser
 import org.apache.spark.sql.types._
 
 
@@ -41,8 +43,8 @@ private[spark] object SchemaUtils {
     val actualDataType = schema(colName).dataType
     val message = if (msg != null && msg.trim.length > 0) " " + msg else ""
     require(actualDataType.equals(dataType),
-      s"Column $colName must be of type ${dataType.catalogString} but was actually " +
-        s"${actualDataType.catalogString}.$message")
+      s"Column $colName must be of type ${dataType.getClass}:${dataType.catalogString} " +
+        s"but was actually ${actualDataType.getClass}:${actualDataType.catalogString}.$message")
   }
 
   /**
@@ -71,7 +73,7 @@ private[spark] object SchemaUtils {
       schema: StructType,
       colName: String,
       msg: String = ""): Unit = {
-    val actualDataType = schema(colName).dataType
+    val actualDataType = getSchemaFieldType(schema, colName)
     val message = if (msg != null && msg.trim.length > 0) " " + msg else ""
     require(actualDataType.isInstanceOf[NumericType],
       s"Column $colName must be of type ${NumericType.simpleString} but was actually of type " +
@@ -107,6 +109,91 @@ private[spark] object SchemaUtils {
   }
 
   /**
+   * Update the size of a ML Vector column. If this column do not exist, append it.
+   * @param schema input schema
+   * @param colName column name
+   * @param size number of features
+   * @return new schema
+   */
+  def updateAttributeGroupSize(
+      schema: StructType,
+      colName: String,
+      size: Int): StructType = {
+    require(size > 0)
+    val attrGroup = new AttributeGroup(colName, size)
+    val field = attrGroup.toStructField()
+    updateField(schema, field, true)
+  }
+
+  /**
+   * Update the number of values of an existing column. If this column do not exist, append it.
+   * @param schema input schema
+   * @param colName column name
+   * @param numValues number of values.
+   * @return new schema
+   */
+  def updateNumValues(
+      schema: StructType,
+      colName: String,
+      numValues: Int): StructType = {
+    val attr = NominalAttribute.defaultAttr
+      .withName(colName)
+      .withNumValues(numValues)
+    val field = attr.toStructField()
+    updateField(schema, field, true)
+  }
+
+  /**
+   * Update the numeric meta of an existing column. If this column do not exist, append it.
+   * @param schema input schema
+   * @param colName column name
+   * @return new schema
+   */
+  def updateNumeric(
+      schema: StructType,
+      colName: String): StructType = {
+    val attr = NumericAttribute.defaultAttr
+      .withName(colName)
+    val field = attr.toStructField()
+    updateField(schema, field, true)
+  }
+
+  /**
+   * Update the metadata of an existing column. If this column do not exist, append it.
+   * @param schema input schema
+   * @param field struct field
+   * @param overwriteMetadata whether to overwrite the metadata. If true, the metadata in the
+   *                          schema will be overwritten. If false, the metadata in `field`
+   *                          and `schema` will be merged to generate output metadata.
+   * @return new schema
+   */
+  def updateField(
+      schema: StructType,
+      field: StructField,
+      overwriteMetadata: Boolean = true): StructType = {
+    if (schema.fieldNames.contains(field.name)) {
+      val newFields = schema.fields.map { f =>
+        if (f.name == field.name) {
+          if (overwriteMetadata) {
+            field
+          } else {
+            val newMeta = new MetadataBuilder()
+              .withMetadata(field.metadata)
+              .withMetadata(f.metadata)
+              .build()
+            StructField(field.name, field.dataType, field.nullable, newMeta)
+          }
+        } else {
+          f
+        }
+      }
+      StructType(newFields)
+    } else {
+      appendColumn(schema, field)
+    }
+  }
+
+  /**
    * Check whether the given column in the schema is one of the supporting vector type: Vector,
    * Array[Float]. Array[Double]
    * @param schema input schema
@@ -117,5 +204,28 @@ private[spark] object SchemaUtils {
       new ArrayType(DoubleType, false),
       new ArrayType(FloatType, false))
     checkColumnTypes(schema, colName, typeCandidates)
+  }
+
+  /**
+   * Get schema field.
+   * @param schema input schema
+   * @param colName column name, nested column name is supported.
+   */
+  def getSchemaField(schema: StructType, colName: String): StructField = {
+    val colSplits = AttributeNameParser.parseAttributeName(colName)
+    var field = schema(colSplits(0))
+    for (colSplit <- colSplits.slice(1, colSplits.length)) {
+      field = field.dataType.asInstanceOf[StructType](colSplit)
+    }
+    field
+  }
+
+  /**
+   * Get schema field type.
+   * @param schema input schema
+   * @param colName column name, nested column name is supported.
+   */
+  def getSchemaFieldType(schema: StructType, colName: String): DataType = {
+    getSchemaField(schema, colName).dataType
   }
 }
