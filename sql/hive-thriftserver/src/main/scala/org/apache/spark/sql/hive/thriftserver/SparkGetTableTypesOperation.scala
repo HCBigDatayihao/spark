@@ -24,43 +24,38 @@ import org.apache.hive.service.cli._
 import org.apache.hive.service.cli.operation.GetTableTypesOperation
 import org.apache.hive.service.cli.session.HiveSession
 
-import org.apache.spark.internal.Logging
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.internal.{Logging, MDC}
+import org.apache.spark.internal.LogKeys._
+import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.catalyst.catalog.CatalogTableType
-import org.apache.spark.util.{Utils => SparkUtils}
 
 /**
  * Spark's own GetTableTypesOperation
  *
- * @param sqlContext SQLContext to use
+ * @param session SparkSession to use
  * @param parentSession a HiveSession from SessionManager
  */
 private[hive] class SparkGetTableTypesOperation(
-    sqlContext: SQLContext,
+    val session: SparkSession,
     parentSession: HiveSession)
-  extends GetTableTypesOperation(parentSession) with SparkMetadataOperationUtils with Logging {
-
-  private var statementId: String = _
-
-  override def close(): Unit = {
-    super.close()
-    HiveThriftServer2.listener.onOperationClosed(statementId)
-  }
+  extends GetTableTypesOperation(parentSession)
+  with SparkOperation
+  with Logging {
 
   override def runInternal(): Unit = {
     statementId = UUID.randomUUID().toString
     val logMsg = "Listing table types"
-    logInfo(s"$logMsg with $statementId")
+    logInfo(log"Listing table types with ${MDC(STATEMENT_ID, statementId)}")
     setState(OperationState.RUNNING)
     // Always use the latest class loader provided by executionHive's state.
-    val executionHiveClassLoader = sqlContext.sharedState.jarClassLoader
+    val executionHiveClassLoader = session.sharedState.jarClassLoader
     Thread.currentThread().setContextClassLoader(executionHiveClassLoader)
 
     if (isAuthV2Enabled) {
       authorizeMetaGets(HiveOperationType.GET_TABLETYPES, null)
     }
 
-    HiveThriftServer2.listener.onStatementStart(
+    HiveThriftServer2.eventManager.onStatementStart(
       statementId,
       parentSession.getSessionHandle.getSessionId.toString,
       logMsg,
@@ -73,13 +68,8 @@ private[hive] class SparkGetTableTypesOperation(
         rowSet.addRow(Array[AnyRef](tableType))
       }
       setState(OperationState.FINISHED)
-    } catch {
-      case e: HiveSQLException =>
-        setState(OperationState.ERROR)
-        HiveThriftServer2.listener.onStatementError(
-          statementId, e.getMessage, SparkUtils.exceptionString(e))
-        throw e
-    }
-    HiveThriftServer2.listener.onStatementFinish(statementId)
+    } catch onError()
+
+    HiveThriftServer2.eventManager.onStatementFinish(statementId)
   }
 }

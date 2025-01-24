@@ -16,15 +16,15 @@
  */
 package org.apache.spark.sql.execution.datasources.v2.parquet
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 import org.apache.hadoop.fs.FileStatus
 
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.connector.write.{LogicalWriteInfo, Write, WriteBuilder}
 import org.apache.spark.sql.execution.datasources.FileFormat
 import org.apache.spark.sql.execution.datasources.parquet.ParquetUtils
 import org.apache.spark.sql.execution.datasources.v2.FileTable
-import org.apache.spark.sql.sources.v2.writer.WriteBuilder
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.util.CaseInsensitiveStringMap
 
@@ -38,13 +38,17 @@ case class ParquetTable(
   extends FileTable(sparkSession, options, paths, userSpecifiedSchema) {
 
   override def newScanBuilder(options: CaseInsensitiveStringMap): ParquetScanBuilder =
-    new ParquetScanBuilder(sparkSession, fileIndex, schema, dataSchema, options)
+    ParquetScanBuilder(sparkSession, fileIndex, schema, dataSchema, mergedOptions(options))
 
   override def inferSchema(files: Seq[FileStatus]): Option[StructType] =
     ParquetUtils.inferSchema(sparkSession, options.asScala.toMap, files)
 
-  override def newWriteBuilder(options: CaseInsensitiveStringMap): WriteBuilder =
-    new ParquetWriteBuilder(options, paths, formatName, supportsDataType)
+  override def newWriteBuilder(info: LogicalWriteInfo): WriteBuilder = {
+    new WriteBuilder {
+      override def build(): Write =
+        ParquetWrite(paths, formatName, supportsDataType, mergedWriteInfo(info))
+    }
+  }
 
   override def supportsDataType(dataType: DataType): Boolean = dataType match {
     case _: AtomicType => true

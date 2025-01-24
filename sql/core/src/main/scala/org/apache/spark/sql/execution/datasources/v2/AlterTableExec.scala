@@ -17,12 +17,11 @@
 
 package org.apache.spark.sql.execution.datasources.v2
 
-import org.apache.spark.SparkException
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.catalog.v2.{Identifier, TableCatalog, TableChange}
+import org.apache.spark.SparkThrowable
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.catalyst.expressions.Attribute
-import org.apache.spark.sql.execution.LeafExecNode
+import org.apache.spark.sql.connector.catalog.{Identifier, TableCatalog, TableChange}
+import org.apache.spark.sql.errors.QueryExecutionErrors
 
 /**
  * Physical plan node for altering a table.
@@ -30,18 +29,18 @@ import org.apache.spark.sql.execution.LeafExecNode
 case class AlterTableExec(
     catalog: TableCatalog,
     ident: Identifier,
-    changes: Seq[TableChange]) extends LeafExecNode {
+    changes: Seq[TableChange]) extends LeafV2CommandExec {
 
   override def output: Seq[Attribute] = Seq.empty
 
-  override protected def doExecute(): RDD[InternalRow] = {
+  override protected def run(): Seq[InternalRow] = {
     try {
       catalog.alterTable(ident, changes: _*)
     } catch {
-      case e: IllegalArgumentException =>
-        throw new SparkException(s"Unsupported table change: ${e.getMessage}", e)
+      case e: IllegalArgumentException if !e.isInstanceOf[SparkThrowable] =>
+        throw QueryExecutionErrors.unsupportedTableChangeError(e)
     }
 
-    sqlContext.sparkContext.parallelize(Seq.empty, 1)
+    Seq.empty
   }
 }

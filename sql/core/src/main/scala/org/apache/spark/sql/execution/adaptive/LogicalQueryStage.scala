@@ -18,9 +18,11 @@
 package org.apache.spark.sql.execution.adaptive
 
 import org.apache.spark.sql.catalyst.expressions.{Attribute, SortOrder}
-import org.apache.spark.sql.catalyst.plans.logical.{LeafNode, LogicalPlan, Statistics}
-import org.apache.spark.sql.catalyst.plans.physical.Partitioning
+import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, RepartitionOperation, Statistics}
+import org.apache.spark.sql.catalyst.plans.logical
+import org.apache.spark.sql.catalyst.trees.TreePattern.{LOGICAL_QUERY_STAGE, REPARTITION_OPERATION, TreePattern}
 import org.apache.spark.sql.execution.SparkPlan
+import org.apache.spark.sql.execution.aggregate.BaseAggregateExec
 
 /**
  * The LogicalPlan wrapper for a [[QueryStageExec]], or a snippet of physical plan containing
@@ -34,23 +36,50 @@ import org.apache.spark.sql.execution.SparkPlan
 // TODO we can potentially include only [[QueryStageExec]] in this class if we make the aggregation
 // planning aware of partitioning.
 case class LogicalQueryStage(
-    logicalPlan: LogicalPlan,
-    physicalPlan: SparkPlan) extends LeafNode {
+    override val logicalPlan: LogicalPlan,
+    override val physicalPlan: SparkPlan) extends logical.LogicalQueryStage {
 
   override def output: Seq[Attribute] = logicalPlan.output
   override val isStreaming: Boolean = logicalPlan.isStreaming
   override val outputOrdering: Seq[SortOrder] = physicalPlan.outputOrdering
+  override protected val nodePatterns: Seq[TreePattern] = {
+    // Repartition is a special node that it represents a shuffle exchange,
+    // then in AQE the repartition will be always wrapped into `LogicalQueryStage`
+    val repartitionPattern = logicalPlan match {
+      case _: RepartitionOperation => Some(REPARTITION_OPERATION)
+      case _ => None
+    }
+    Seq(LOGICAL_QUERY_STAGE) ++ repartitionPattern
+  }
 
   override def computeStats(): Statistics = {
     // TODO this is not accurate when there is other physical nodes above QueryStageExec.
     val physicalStats = physicalPlan.collectFirst {
-      case s: QueryStageExec => s
-    }.flatMap(_.computeStats())
+      case a: BaseAggregateExec if a.groupingExpressions.isEmpty =>
+        a.collectFirst {
+          case s: QueryStageExec => s.computeStats()
+        }.flatten.map { stat =>
+          if (stat.rowCount.contains(0)) stat.copy(rowCount = Some(1)) else stat
+        }
+      case s: QueryStageExec => s.computeStats()
+    }.flatten
     if (physicalStats.isDefined) {
       logDebug(s"Physical stats available as ${physicalStats.get} for plan: $physicalPlan")
     } else {
       logDebug(s"Physical stats not available for plan: $physicalPlan")
     }
     physicalStats.getOrElse(logicalPlan.stats)
+  }
+
+  override def maxRows: Option[Long] = stats.rowCount.map(_.min(Long.MaxValue).toLong)
+
+  override def isMaterialized: Boolean = physicalPlan.exists {
+    case s: QueryStageExec => s.isMaterialized
+    case _ => false
+  }
+
+  override def isDirectStage: Boolean = physicalPlan match {
+    case _: QueryStageExec => true
+    case _ => false
   }
 }

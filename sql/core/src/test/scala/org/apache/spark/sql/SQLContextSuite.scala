@@ -24,14 +24,32 @@ import org.apache.spark.sql.catalyst.rules.Rule
 import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.types.{BooleanType, StringType, StructField, StructType}
 
+@deprecated("This suite is deprecated to silent compiler deprecation warnings", "2.0.0")
 class SQLContextSuite extends SparkFunSuite with SharedSparkContext {
 
   object DummyRule extends Rule[LogicalPlan] {
     def apply(p: LogicalPlan): LogicalPlan = p
   }
 
+  test("getOrCreate instantiates SQLContext") {
+    val sqlContext = SQLContext.getOrCreate(sc)
+    assert(sqlContext != null, "SQLContext.getOrCreate returned null")
+    assert(SQLContext.getOrCreate(sc).eq(sqlContext),
+      "SQLContext created by SQLContext.getOrCreate not returned by SQLContext.getOrCreate")
+  }
+
+  test("getOrCreate return the original SQLContext") {
+    val sqlContext = SQLContext.getOrCreate(sc)
+    val newSession = sqlContext.newSession()
+    assert(SQLContext.getOrCreate(sc).eq(sqlContext),
+      "SQLContext.getOrCreate after explicitly created SQLContext did not return the context")
+    SparkSession.setActiveSession(newSession.sparkSession)
+    assert(SQLContext.getOrCreate(sc).eq(newSession),
+      "SQLContext.getOrCreate after explicitly setActive() did not return the active context")
+  }
+
   test("Sessions of SQLContext") {
-    val sqlContext = SparkSession.builder().sparkContext(sc).getOrCreate().sqlContext
+    val sqlContext = SQLContext.getOrCreate(sc)
     val session1 = sqlContext.newSession()
     val session2 = sqlContext.newSession()
 
@@ -59,13 +77,13 @@ class SQLContextSuite extends SparkFunSuite with SharedSparkContext {
   }
 
   test("Catalyst optimization passes are modifiable at runtime") {
-    val sqlContext = SparkSession.builder().sparkContext(sc).getOrCreate().sqlContext
+    val sqlContext = SQLContext.getOrCreate(sc)
     sqlContext.experimental.extraOptimizations = Seq(DummyRule)
     assert(sqlContext.sessionState.optimizer.batches.flatMap(_.rules).contains(DummyRule))
   }
 
   test("get all tables") {
-    val sqlContext = SparkSession.builder().sparkContext(sc).getOrCreate().sqlContext
+    val sqlContext = SQLContext.getOrCreate(sc)
     val df = sqlContext.range(10)
     df.createOrReplaceTempView("listtablessuitetable")
     assert(
@@ -81,8 +99,31 @@ class SQLContextSuite extends SparkFunSuite with SharedSparkContext {
     assert(sqlContext.tables().filter("tableName = 'listtablessuitetable'").count() === 0)
   }
 
+  test("get tables from a database") {
+    val sqlContext = SQLContext.getOrCreate(sc)
+
+    try {
+      sqlContext.sql("CREATE DATABASE IF NOT EXISTS temp_db_1")
+      sqlContext.sql("CREATE TABLE temp_db_1.temp_table_1 (key int)")
+      sqlContext.sql("INSERT INTO temp_db_1.temp_table_1 VALUES (1)")
+
+      assert(sqlContext.tableNames("temp_db_1").sameElements(Array("temp_table_1")))
+
+      assert(sqlContext.tables("temp_db_1").collect().toSeq ==
+        Row("temp_db_1", "temp_table_1", false) :: Nil)
+
+      assert(sqlContext.tables().collect().toSeq == Nil)
+      sqlContext.sql("USE temp_db_1")
+      assert(sqlContext.tableNames().sameElements(Array("temp_table_1")))
+      assert(sqlContext.tables().collect().toSeq == Row("temp_db_1", "temp_table_1", false) :: Nil)
+    } finally {
+      sqlContext.sql("USE default")
+      sqlContext.sql("DROP DATABASE IF EXISTS temp_db_1 CASCADE")
+    }
+  }
+
   test("getting all tables with a database name has no impact on returned table names") {
-    val sqlContext = SparkSession.builder().sparkContext(sc).getOrCreate().sqlContext
+    val sqlContext = SQLContext.getOrCreate(sc)
     val df = sqlContext.range(10)
     df.createOrReplaceTempView("listtablessuitetable")
     assert(
@@ -99,17 +140,17 @@ class SQLContextSuite extends SparkFunSuite with SharedSparkContext {
   }
 
   test("query the returned DataFrame of tables") {
-    val sqlContext = SparkSession.builder().sparkContext(sc).getOrCreate().sqlContext
+    val sqlContext = SQLContext.getOrCreate(sc)
     val df = sqlContext.range(10)
     df.createOrReplaceTempView("listtablessuitetable")
 
     val expectedSchema = StructType(
-      StructField("database", StringType, false) ::
+      StructField("namespace", StringType, false) ::
         StructField("tableName", StringType, false) ::
         StructField("isTemporary", BooleanType, false) :: Nil)
 
     Seq(sqlContext.tables(), sqlContext.sql("SHOW TABLes")).foreach {
-      tableDF =>
+      case tableDF =>
         assert(expectedSchema === tableDF.schema)
 
         tableDF.createOrReplaceTempView("tables")

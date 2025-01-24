@@ -17,26 +17,170 @@
 
 package org.apache.spark.sql.execution.exchange
 
-import java.util.Random
+import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Supplier
+
+import scala.collection.mutable
+import scala.concurrent.{ExecutionContext, Future, Promise}
 
 import org.apache.spark._
 import org.apache.spark.internal.config
-import org.apache.spark.rdd.RDD
+import org.apache.spark.rdd.{RDD, RDDOperationScope}
 import org.apache.spark.serializer.Serializer
 import org.apache.spark.shuffle.{ShuffleWriteMetricsReporter, ShuffleWriteProcessor}
 import org.apache.spark.shuffle.sort.SortShuffleManager
 import org.apache.spark.sql.catalyst.InternalRow
-import org.apache.spark.sql.catalyst.errors._
 import org.apache.spark.sql.catalyst.expressions.{Attribute, BoundReference, UnsafeProjection, UnsafeRow}
+import org.apache.spark.sql.catalyst.expressions.BindReferences.bindReferences
 import org.apache.spark.sql.catalyst.expressions.codegen.LazilyGeneratedOrdering
+import org.apache.spark.sql.catalyst.plans.logical.Statistics
 import org.apache.spark.sql.catalyst.plans.physical._
+import org.apache.spark.sql.catalyst.types.DataTypeUtils
 import org.apache.spark.sql.execution._
 import org.apache.spark.sql.execution.metric.{SQLMetric, SQLMetrics, SQLShuffleReadMetricsReporter, SQLShuffleWriteMetricsReporter}
-import org.apache.spark.sql.internal.SQLConf
-import org.apache.spark.sql.types.StructType
-import org.apache.spark.util.MutablePair
+import org.apache.spark.sql.internal.{SQLConf, StaticSQLConf}
+import org.apache.spark.util.{MutablePair, ThreadUtils}
 import org.apache.spark.util.collection.unsafe.sort.{PrefixComparators, RecordComparator}
+import org.apache.spark.util.random.XORShiftRandom
+
+/**
+ * Common trait for all shuffle exchange implementations to facilitate pattern matching.
+ */
+trait ShuffleExchangeLike extends Exchange {
+  /**
+   * Returns the number of mappers of this shuffle.
+   */
+  def numMappers: Int
+
+  /**
+   * Returns the shuffle partition number.
+   */
+  def numPartitions: Int
+
+  /**
+   * Returns the advisory partition size.
+   */
+  def advisoryPartitionSize: Option[Long]
+
+  /**
+   * The origin of this shuffle operator.
+   */
+  def shuffleOrigin: ShuffleOrigin
+
+  @transient
+  private lazy val promise = Promise[MapOutputStatistics]()
+
+  @transient
+  private lazy val completionFuture
+  : scala.concurrent.Future[MapOutputStatistics] = promise.future
+
+  @transient
+  private[sql] // Exposed for testing
+  val futureAction = new AtomicReference[Option[FutureAction[MapOutputStatistics]]](None)
+
+  @transient
+  private var isCancelled: Boolean = false
+
+  @transient
+  private lazy val triggerFuture: java.util.concurrent.Future[Any] = {
+    SQLExecution.withThreadLocalCaptured(session, ShuffleExchangeExec.executionContext) {
+      try {
+        // Trigger shuffle preparation which can involve expensive operations like waiting on
+        // subqueries and file listing.
+        executeQuery(null)
+        // Submit shuffle job if not cancelled.
+        this.synchronized {
+          if (isCancelled) {
+            promise.tryFailure(new SparkException("Shuffle cancelled."))
+          } else {
+            val shuffleJob = RDDOperationScope.withScope(sparkContext, nodeName, false, true) {
+              mapOutputStatisticsFuture
+            }
+            shuffleJob match {
+              case action: FutureAction[MapOutputStatistics] => futureAction.set(Some(action))
+              case _ =>
+            }
+            promise.completeWith(shuffleJob)
+          }
+        }
+        null
+      } catch {
+        case e: Throwable =>
+          promise.tryFailure(e)
+          throw e
+      }
+    }
+  }
+
+  /**
+   * The asynchronous job that materializes the shuffle. It also does the preparations work,
+   * such as waiting for the subqueries.
+   */
+  final def submitShuffleJob(): Future[MapOutputStatistics] = {
+    triggerFuture
+    completionFuture
+  }
+
+  /**
+   * Cancels the shuffle job with an optional reason.
+   */
+  final def cancelShuffleJob(reason: Option[String]): Unit = this.synchronized {
+    if (!isCancelled) {
+      isCancelled = true
+      futureAction.get().foreach(_.cancel(reason))
+    }
+  }
+
+  protected def mapOutputStatisticsFuture: Future[MapOutputStatistics]
+
+  /**
+   * Returns the shuffle RDD with specified partition specs.
+   */
+  def getShuffleRDD(partitionSpecs: Array[ShufflePartitionSpec]): RDD[_]
+
+  /**
+   * Returns the runtime statistics after shuffle materialization.
+   */
+  def runtimeStatistics: Statistics
+
+  /**
+   * The shuffle ID.
+   */
+  def shuffleId: Int
+}
+
+// Describes where the shuffle operator comes from.
+sealed trait ShuffleOrigin
+
+// Indicates that the shuffle operator was added by the internal `EnsureRequirements` rule. It
+// means that the shuffle operator is used to ensure internal data partitioning requirements and
+// Spark is free to optimize it as long as the requirements are still ensured.
+case object ENSURE_REQUIREMENTS extends ShuffleOrigin
+
+// Indicates that the shuffle operator was added by the user-specified repartition operator. Spark
+// can still optimize it via changing shuffle partition number, as data partitioning won't change.
+case object REPARTITION_BY_COL extends ShuffleOrigin
+
+// Indicates that the shuffle operator was added by the user-specified repartition operator with
+// a certain partition number. Spark can't optimize it.
+case object REPARTITION_BY_NUM extends ShuffleOrigin
+
+// Indicates that the shuffle operator was added by the user-specified rebalance operator.
+// Spark will try to rebalance partitions that make per-partition size not too small and not
+// too big. Local shuffle read will be used if possible to reduce network traffic.
+case object REBALANCE_PARTITIONS_BY_NONE extends ShuffleOrigin
+
+// Indicates that the shuffle operator was added by the user-specified rebalance operator with
+// columns. Spark will try to rebalance partitions that make per-partition size not too small and
+// not too big.
+// Different from `REBALANCE_PARTITIONS_BY_NONE`, local shuffle read cannot be used for it as
+// the output needs to be partitioned by the given columns.
+case object REBALANCE_PARTITIONS_BY_COL extends ShuffleOrigin
+
+// Indicates that the shuffle operator was added by the internal `EnsureRequirements` rule, but
+// was required by a stateful operator. The physical partitioning is static and Spark shouldn't
+// change it.
+case object REQUIRED_BY_STATEFUL_OPERATOR extends ShuffleOrigin
 
 /**
  * Performs a shuffle that will result in the desired partitioning.
@@ -44,24 +188,51 @@ import org.apache.spark.util.collection.unsafe.sort.{PrefixComparators, RecordCo
 case class ShuffleExchangeExec(
     override val outputPartitioning: Partitioning,
     child: SparkPlan,
-    canChangeNumPartitions: Boolean = true) extends Exchange {
+    shuffleOrigin: ShuffleOrigin = ENSURE_REQUIREMENTS,
+    advisoryPartitionSize: Option[Long] = None)
+  extends ShuffleExchangeLike {
 
-  // NOTE: coordinator can be null after serialization/deserialization,
-  //       e.g. it can be null on the Executor side
   private lazy val writeMetrics =
     SQLShuffleWriteMetricsReporter.createShuffleWriteMetrics(sparkContext)
-  private lazy val readMetrics =
+  private[sql] lazy val readMetrics =
     SQLShuffleReadMetricsReporter.createShuffleReadMetrics(sparkContext)
   override lazy val metrics = Map(
-    "dataSize" -> SQLMetrics.createSizeMetric(sparkContext, "data size")
+    "dataSize" -> SQLMetrics.createSizeMetric(sparkContext, "data size"),
+    "numPartitions" -> SQLMetrics.createMetric(sparkContext, "number of partitions")
   ) ++ readMetrics ++ writeMetrics
 
   override def nodeName: String = "Exchange"
 
-  private val serializer: Serializer =
+  private lazy val serializer: Serializer =
     new UnsafeRowSerializer(child.output.size, longMetric("dataSize"))
 
   @transient lazy val inputRDD: RDD[InternalRow] = child.execute()
+
+  // 'mapOutputStatisticsFuture' is only needed when enable AQE.
+  @transient
+  override lazy val mapOutputStatisticsFuture: Future[MapOutputStatistics] = {
+    if (inputRDD.getNumPartitions == 0) {
+      Future.successful(null)
+    } else {
+      sparkContext.submitMapStage(shuffleDependency)
+    }
+  }
+
+  override def numMappers: Int = shuffleDependency.rdd.getNumPartitions
+
+  override def numPartitions: Int = shuffleDependency.partitioner.numPartitions
+
+  override def getShuffleRDD(partitionSpecs: Array[ShufflePartitionSpec]): RDD[InternalRow] = {
+    new ShuffledRowRDD(shuffleDependency, readMetrics, partitionSpecs)
+  }
+
+  override def runtimeStatistics: Statistics = {
+    val dataSize = metrics("dataSize").value
+    val rowCount = metrics(SQLShuffleWriteMetricsReporter.SHUFFLE_RECORDS_WRITTEN).value
+    Statistics(dataSize, Some(rowCount))
+  }
+
+  override def shuffleId: Int = shuffleDependency.shuffleId
 
   /**
    * A [[ShuffleDependency]] that will partition rows of its child based on
@@ -70,33 +241,34 @@ case class ShuffleExchangeExec(
    */
   @transient
   lazy val shuffleDependency : ShuffleDependency[Int, InternalRow, InternalRow] = {
-    ShuffleExchangeExec.prepareShuffleDependency(
+    val dep = ShuffleExchangeExec.prepareShuffleDependency(
       inputRDD,
       child.output,
       outputPartitioning,
       serializer,
       writeMetrics)
+    metrics("numPartitions").set(dep.partitioner.numPartitions)
+    val executionId = sparkContext.getLocalProperty(SQLExecution.EXECUTION_ID_KEY)
+    SQLMetrics.postDriverMetricUpdates(
+      sparkContext, executionId, metrics("numPartitions") :: Nil)
+    dep
   }
 
-  def createShuffledRDD(partitionStartIndices: Option[Array[Int]]): ShuffledRowRDD = {
-    new ShuffledRowRDD(shuffleDependency, readMetrics, partitionStartIndices)
+  protected override def doExecute(): RDD[InternalRow] = {
+    // The ShuffleRowRDD will be cached in SparkPlan.executeRDD and reused if this plan is used by
+    // multiple plans.
+    new ShuffledRowRDD(shuffleDependency, readMetrics)
   }
 
-  /**
-   * Caches the created ShuffleRowRDD so we can reuse that.
-   */
-  private var cachedShuffleRDD: ShuffledRowRDD = null
-
-  protected override def doExecute(): RDD[InternalRow] = attachTree(this, "execute") {
-    // Returns the same ShuffleRowRDD if this plan is used by multiple plans.
-    if (cachedShuffleRDD == null) {
-      cachedShuffleRDD = createShuffledRDD(None)
-    }
-    cachedShuffleRDD
-  }
+  override protected def withNewChildInternal(newChild: SparkPlan): ShuffleExchangeExec =
+    copy(child = newChild)
 }
 
 object ShuffleExchangeExec {
+
+  private[execution] val executionContext = ExecutionContext.fromExecutorService(
+    ThreadUtils.newDaemonCachedThreadPool("shuffle-exchange",
+      SQLConf.get.getConf(StaticSQLConf.SHUFFLE_EXCHANGE_MAX_THREAD_THRESHOLD)))
 
   /**
    * Determines whether records must be defensively copied before being sent to the shuffle.
@@ -169,12 +341,9 @@ object ShuffleExchangeExec {
     val part: Partitioner = newPartitioning match {
       case RoundRobinPartitioning(numPartitions) => new HashPartitioner(numPartitions)
       case HashPartitioning(_, n) =>
-        new Partitioner {
-          override def numPartitions: Int = n
-          // For HashPartitioning, the partitioning key is already a valid partition ID, as we use
-          // `HashPartitioning.partitionIdExpression` to produce partitioning key.
-          override def getPartition(key: Any): Int = key.asInstanceOf[Int]
-        }
+        // For HashPartitioning, the partitioning key is already a valid partition ID, as we use
+        // `HashPartitioning.partitionIdExpression` to produce partitioning key.
+        new PartitionIdPassthrough(n)
       case RangePartitioning(sortingExpressions, numPartitions) =>
         // Extract only fields used for sorting to avoid collecting large fields that does not
         // affect sorting result when deciding partition bounds in RangePartitioner
@@ -196,18 +365,26 @@ object ShuffleExchangeExec {
           rddForSampling,
           ascending = true,
           samplePointsPerPartitionHint = SQLConf.get.rangeExchangeSampleSizePerPartition)
-      case SinglePartition =>
-        new Partitioner {
-          override def numPartitions: Int = 1
-          override def getPartition(key: Any): Int = 0
-        }
-      case _ => sys.error(s"Exchange not implemented for $newPartitioning")
+      case SinglePartition => new ConstantPartitioner
+      case k @ KeyGroupedPartitioning(expressions, n, _, _) =>
+        val valueMap = k.uniquePartitionValues.zipWithIndex.map {
+          case (partition, index) => (partition.toSeq(expressions.map(_.dataType)), index)
+        }.toMap
+        new KeyGroupedPartitioner(mutable.Map(valueMap.toSeq: _*), n)
+      case _ => throw SparkException.internalError(s"Exchange not implemented for $newPartitioning")
       // TODO: Handle BroadcastPartitioning.
     }
     def getPartitionKeyExtractor(): InternalRow => Any = newPartitioning match {
       case RoundRobinPartitioning(numPartitions) =>
         // Distributes elements evenly across output partitions, starting from a random partition.
-        var position = new Random(TaskContext.get().partitionId()).nextInt(numPartitions)
+        // nextInt(numPartitions) implementation has a special case when bound is a power of 2,
+        // which is basically taking several highest bits from the initial seed, with only a
+        // minimal scrambling. Due to deterministic seed, using the generator only once,
+        // and lack of scrambling, the position values for power-of-two numPartitions always
+        // end up being almost the same regardless of the index. substantially scrambling the
+        // seed by hashing will help. Refer to SPARK-21782 for more details.
+        val partitionId = TaskContext.get().partitionId()
+        var position = new XORShiftRandom(partitionId).nextInt(numPartitions)
         (row: InternalRow) => {
           // The HashPartitioner will handle the `mod` by the number of partitions
           position += 1
@@ -220,7 +397,9 @@ object ShuffleExchangeExec {
         val projection = UnsafeProjection.create(sortingExpressions.map(_.child), outputAttributes)
         row => projection(row)
       case SinglePartition => identity
-      case _ => sys.error(s"Exchange not implemented for $newPartitioning")
+      case KeyGroupedPartitioning(expressions, _, _, _) =>
+        row => bindReferences(expressions, outputAttributes).map(_.eval(row))
+      case _ => throw SparkException.internalError(s"Exchange not implemented for $newPartitioning")
     }
 
     val isRoundRobin = newPartitioning.isInstanceOf[RoundRobinPartitioning] &&
@@ -242,7 +421,7 @@ object ShuffleExchangeExec {
           }
           // The comparator for comparing row hashcode, which should always be Integer.
           val prefixComparator = PrefixComparators.LONG
-          val canUseRadixSort = SQLConf.get.enableRadixSort
+
           // The prefix computer generates row hashcode as the prefix, so we may decrease the
           // probability that the prefixes are equal when input rows choose column values from a
           // limited range.
@@ -259,12 +438,14 @@ object ShuffleExchangeExec {
           val pageSize = SparkEnv.get.memoryManager.pageSizeBytes
 
           val sorter = UnsafeExternalRowSorter.createWithRecordComparator(
-            StructType.fromAttributes(outputAttributes),
+            DataTypeUtils.fromAttributes(outputAttributes),
             recordComparatorSupplier,
             prefixComparator,
             prefixComputer,
             pageSize,
-            canUseRadixSort)
+            // We are comparing binary here, which does not support radix sort.
+            // See more details in SPARK-28699.
+            false)
           sorter.sort(iter.asInstanceOf[Iterator[UnsafeRow]])
         }
       } else {

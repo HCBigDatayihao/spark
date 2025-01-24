@@ -23,17 +23,16 @@ import java.nio.file.Files
 import java.util.Arrays
 
 import org.mockito.Answers.RETURNS_SMART_NULLS
-import org.mockito.ArgumentMatchers.{any, anyInt}
+import org.mockito.ArgumentMatchers.{any, anyInt, anyLong}
 import org.mockito.Mock
 import org.mockito.Mockito.when
 import org.mockito.MockitoAnnotations
-import org.scalatest.BeforeAndAfterEach
 
 import org.apache.spark.{SparkConf, SparkFunSuite}
 import org.apache.spark.shuffle.IndexShuffleBlockResolver
 import org.apache.spark.util.Utils
 
-class LocalDiskShuffleMapOutputWriterSuite extends SparkFunSuite with BeforeAndAfterEach {
+class LocalDiskShuffleMapOutputWriterSuite extends SparkFunSuite {
 
   @Mock(answer = RETURNS_SMART_NULLS)
   private var blockResolver: IndexShuffleBlockResolver = _
@@ -65,20 +64,25 @@ class LocalDiskShuffleMapOutputWriterSuite extends SparkFunSuite with BeforeAndA
   }
 
   override def beforeEach(): Unit = {
-    MockitoAnnotations.initMocks(this)
+    MockitoAnnotations.openMocks(this).close()
     tempDir = Utils.createTempDir()
     mergedOutputFile = File.createTempFile("mergedoutput", "", tempDir)
     tempFile = File.createTempFile("tempfile", "", tempDir)
     partitionSizesInMergedFile = null
     conf = new SparkConf()
       .set("spark.app.id", "example.spark.app")
-      .set("spark.shuffle.unsafe.file.output.buffer", "16k")
-    when(blockResolver.getDataFile(anyInt, anyInt)).thenReturn(mergedOutputFile)
-    when(blockResolver.writeIndexFileAndCommit(
-      anyInt, anyInt, any(classOf[Array[Long]]), any(classOf[File])))
+      .set("spark.shuffle.localDisk.file.output.buffer", "16k")
+    when(blockResolver.getDataFile(anyInt, anyLong)).thenReturn(mergedOutputFile)
+    when(blockResolver.createTempFile(any(classOf[File])))
+      .thenAnswer { invocationOnMock =>
+        val file = invocationOnMock.getArguments()(0).asInstanceOf[File]
+        Utils.tempFileWith(file)
+      }
+    when(blockResolver.writeMetadataFileAndCommit(
+      anyInt, anyLong, any(classOf[Array[Long]]), any(classOf[Array[Long]]), any(classOf[File])))
       .thenAnswer { invocationOnMock =>
         partitionSizesInMergedFile = invocationOnMock.getArguments()(2).asInstanceOf[Array[Long]]
-        val tmp: File = invocationOnMock.getArguments()(3).asInstanceOf[File]
+        val tmp: File = invocationOnMock.getArguments()(4).asInstanceOf[File]
         if (tmp != null) {
           mergedOutputFile.delete()
           tmp.renameTo(mergedOutputFile)
@@ -102,7 +106,6 @@ class LocalDiskShuffleMapOutputWriterSuite extends SparkFunSuite with BeforeAndA
       intercept[IllegalStateException] {
         stream.write(p)
       }
-      assert(writer.getNumBytesWritten === data(p).length)
     }
     verifyWrittenRecords()
   }
@@ -122,8 +125,6 @@ class LocalDiskShuffleMapOutputWriterSuite extends SparkFunSuite with BeforeAndA
             tempFileInput.getChannel, channelWrapper.channel(), 0L, data(p).length)
         }
       }
-      assert(writer.getNumBytesWritten === data(p).length,
-        s"Partition $p does not have the correct number of bytes.")
     }
     verifyWrittenRecords()
   }
@@ -139,8 +140,10 @@ class LocalDiskShuffleMapOutputWriterSuite extends SparkFunSuite with BeforeAndA
   }
 
   private def verifyWrittenRecords(): Unit = {
-    mapOutputWriter.commitAllPartitions()
+    val committedLengths =
+      mapOutputWriter.commitAllPartitions(Array.empty[Long]).getPartitionLengths
     assert(partitionSizesInMergedFile === partitionLengths)
+    assert(committedLengths === partitionLengths)
     assert(mergedOutputFile.length() === partitionLengths.sum)
     assert(data === readRecordsFromFile())
   }

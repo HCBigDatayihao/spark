@@ -17,17 +17,23 @@
 
 package org.apache.spark.sql.streaming
 
-import java.io.File
+import java.io.{File, IOException}
 import java.nio.file.Files
 import java.util.Locale
 
-import scala.collection.JavaConverters._
+import scala.collection.mutable.ArrayBuffer
+import scala.jdk.CollectionConverters._
 
-import org.apache.hadoop.fs.Path
+import org.apache.hadoop.fs.{FileStatus, Path, RawLocalFileSystem}
+import org.apache.hadoop.mapreduce.JobContext
 
 import org.apache.spark.SparkConf
+import org.apache.spark.deploy.SparkHadoopUtil
+import org.apache.spark.internal.io.FileCommitProtocol
+import org.apache.spark.paths.SparkPath
 import org.apache.spark.scheduler.{SparkListener, SparkListenerTaskEnd}
 import org.apache.spark.sql.{AnalysisException, DataFrame}
+import org.apache.spark.sql.catalyst.util.stringToFile
 import org.apache.spark.sql.execution.DataSourceScanExec
 import org.apache.spark.sql.execution.datasources._
 import org.apache.spark.sql.execution.datasources.v2.{BatchScanExec, DataSourceV2Relation, FileScan, FileTable}
@@ -35,6 +41,8 @@ import org.apache.spark.sql.execution.streaming._
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.types.{IntegerType, StructField, StructType}
+import org.apache.spark.tags.SlowSQLTest
+import org.apache.spark.util.ArrayImplicits._
 import org.apache.spark.util.Utils
 
 abstract class FileStreamSinkSuite extends StreamTest {
@@ -42,7 +50,7 @@ abstract class FileStreamSinkSuite extends StreamTest {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    spark.sessionState.conf.setConf(SQLConf.ORC_IMPLEMENTATION, "native")
+    spark.conf.set(SQLConf.ORC_IMPLEMENTATION.key, "native")
   }
 
   override def afterAll(): Unit = {
@@ -205,9 +213,9 @@ abstract class FileStreamSinkSuite extends StreamTest {
     // with aggregations using event time windows and watermark, which allows
     // aggregation + append mode.
     val inputData = MemoryStream[Long]
-    val inputDF = inputData.toDF.toDF("time")
+    val inputDF = inputData.toDF().toDF("time")
     val outputDf = inputDF
-      .selectExpr("CAST(time AS timestamp) AS timestamp")
+      .selectExpr("timestamp_seconds(time) AS timestamp")
       .withWatermark("timestamp", "10 seconds")
       .groupBy(window($"timestamp", "5 seconds"))
       .count()
@@ -268,14 +276,14 @@ abstract class FileStreamSinkSuite extends StreamTest {
     withTempDir { dir =>
 
       def testOutputMode(mode: String): Unit = {
-        val e = intercept[AnalysisException] {
-          df.writeStream.format("parquet").outputMode(mode).start(dir.getCanonicalPath)
-        }
-        Seq(mode, "not support").foreach { w =>
-          assert(e.getMessage.toLowerCase(Locale.ROOT).contains(w))
-        }
+        checkError(
+          exception = intercept[AnalysisException] {
+            df.writeStream.format("parquet").outputMode(mode).start(dir.getCanonicalPath)
+          },
+          condition = "STREAMING_OUTPUT_MODE.UNSUPPORTED_DATASOURCE",
+          sqlState = "42KDE",
+          parameters = Map("className" -> "parquet", "outputMode" -> mode))
       }
-
       testOutputMode("update")
       testOutputMode("complete")
     }
@@ -366,10 +374,12 @@ abstract class FileStreamSinkSuite extends StreamTest {
           }
         }
 
-        val errorMsg = intercept[AnalysisException] {
-          spark.read.schema(s"$c0 INT, $c1 INT").json(outputDir).as[(Int, Int)]
-        }.getMessage
-        assert(errorMsg.contains("Found duplicate column(s) in the data schema: "))
+        checkError(
+          exception = intercept[AnalysisException] {
+            spark.read.schema(s"$c0 INT, $c1 INT").json(outputDir).as[(Int, Int)]
+          },
+          condition = "COLUMN_ALREADY_EXISTS",
+          parameters = Map("columnName" -> s"`${c1.toLowerCase(Locale.ROOT)}`"))
       }
     }
   }
@@ -389,7 +399,7 @@ abstract class FileStreamSinkSuite extends StreamTest {
           var bytesWritten: Long = 0L
           try {
             spark.sparkContext.addSparkListener(new SparkListener() {
-              override def onTaskEnd(taskEnd: SparkListenerTaskEnd) {
+              override def onTaskEnd(taskEnd: SparkListenerTaskEnd): Unit = {
                 val outputMetrics = taskEnd.taskMetrics.outputMetrics
                 recordsWritten += outputMetrics.recordsWritten
                 bytesWritten += outputMetrics.bytesWritten
@@ -473,20 +483,223 @@ abstract class FileStreamSinkSuite extends StreamTest {
       assert(outputFiles.toList.isEmpty, "Incomplete files should be cleaned up.")
     }
   }
+
+  testQuietly("cleanup complete but invalid output for aborted job") {
+    withSQLConf(("spark.sql.streaming.commitProtocolClass",
+      classOf[PendingCommitFilesTrackingManifestFileCommitProtocol].getCanonicalName)) {
+      withTempDir { tempDir =>
+        val checkpointDir = new File(tempDir, "chk")
+        val outputDir = new File(tempDir, "output @#output")
+        val inputData = MemoryStream[Int]
+        inputData.addData(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+        val q = inputData.toDS()
+          .repartition(10)
+          .map { value =>
+            // we intend task failure after some tasks succeeds
+            if (value == 5) {
+              // put some delay to let other task commits before this task fails
+              Thread.sleep(100)
+              value / 0
+            } else {
+              value
+            }
+          }
+          .writeStream
+          .option("checkpointLocation", checkpointDir.getCanonicalPath)
+          .format("parquet")
+          .start(outputDir.getCanonicalPath)
+
+        intercept[StreamingQueryException] {
+          try {
+            q.processAllAvailable()
+          } finally {
+            q.stop()
+          }
+        }
+
+        import PendingCommitFilesTrackingManifestFileCommitProtocol._
+        val outputFileNames = Files.walk(outputDir.toPath).iterator().asScala
+          .filter(_.toString.endsWith(".parquet"))
+          .map(_.getFileName.toString)
+          .toSet
+        val trackingFileNames = tracking.map(SparkPath.fromUrlString(_).toPath.getName).toSet
+
+        // there would be possible to have race condition:
+        // - some tasks complete while abortJob is being called
+        // we can't delete complete files for these tasks (it's OK since this is a best effort)
+        assert(outputFileNames.intersect(trackingFileNames).isEmpty,
+          "abortJob should clean up files reported as successful.")
+      }
+    }
+  }
+
+  test("Handle FileStreamSink metadata correctly for empty partition") {
+    Seq("parquet", "orc", "text", "json").foreach { format =>
+      val inputData = MemoryStream[String]
+      val df = inputData.toDF()
+
+      withTempDir { outputDir =>
+        withTempDir { checkpointDir =>
+          var query: StreamingQuery = null
+          try {
+            // repartition to more than the input to leave empty partitions
+            query =
+              df.repartition(10)
+                .writeStream
+                .option("checkpointLocation", checkpointDir.getCanonicalPath)
+                .format(format)
+                .start(outputDir.getCanonicalPath)
+
+            inputData.addData("1", "2", "3")
+            inputData.addData("4", "5")
+
+            failAfter(streamingTimeout) {
+              query.processAllAvailable()
+            }
+          } finally {
+            if (query != null) {
+              query.stop()
+            }
+          }
+
+          val outputDirPath = new Path(outputDir.getCanonicalPath)
+          val hadoopConf = spark.sessionState.newHadoopConf()
+          val fs = outputDirPath.getFileSystem(hadoopConf)
+          val logPath = FileStreamSink.getMetadataLogPath(fs, outputDirPath, conf)
+
+          val sinkLog = new FileStreamSinkLog(FileStreamSinkLog.VERSION, spark, logPath.toString)
+
+          val allFiles = sinkLog.allFiles()
+          // only files from non-empty partition should be logged
+          assert(allFiles.length < 10)
+          assert(allFiles.forall(file => fs.exists(file.sparkPath.toPath)))
+
+          // the query should be able to read all rows correctly with metadata log
+          val outputDf = spark.read.format(format).load(outputDir.getCanonicalPath)
+            .selectExpr("CAST(value AS INT)").as[Int]
+          checkDatasetUnorderly(outputDf, 1, 2, 3, 4, 5)
+        }
+      }
+    }
+  }
+
+  test("formatCheck fail should not fail the query") {
+    withSQLConf(
+      "fs.file.impl" -> classOf[FailFormatCheckFileSystem].getName,
+      "fs.file.impl.disable.cache" -> "true") {
+      withTempDir { tempDir =>
+        val path = new File(tempDir, "text").getCanonicalPath
+        Seq("foo").toDF().write.format("text").save(path)
+        spark.read.format("text").load(path)
+      }
+    }
+  }
+
+  test("fail to check glob path should not fail the query") {
+    withSQLConf(
+      "fs.file.impl" -> classOf[FailFormatCheckFileSystem].getName,
+      "fs.file.impl.disable.cache" -> "true") {
+      withTempDir { tempDir =>
+        val path = new File(tempDir, "text").getCanonicalPath
+        Seq("foo").toDF().write.format("text").save(path)
+        spark.read.format("text").load(path + "/*")
+      }
+    }
+  }
+
+  test("SPARK-35565: Ignore metadata directory when reading sink output") {
+    Seq(true, false).foreach { ignoreMetadata =>
+      withSQLConf(SQLConf.FILESTREAM_SINK_METADATA_IGNORED.key -> ignoreMetadata.toString) {
+        val inputData = MemoryStream[String]
+        val df = inputData.toDF()
+
+        withTempDir { outputDir =>
+          withTempDir { checkpointDir =>
+            var query: StreamingQuery = null
+            try {
+              query =
+                df.writeStream
+                  .option("checkpointLocation", checkpointDir.getCanonicalPath)
+                  .format("text")
+                  .start(outputDir.getCanonicalPath)
+
+              inputData.addData("1", "2", "3")
+              inputData.addData("4", "5")
+
+              failAfter(streamingTimeout) {
+                query.processAllAvailable()
+              }
+            } finally {
+              if (query != null) {
+                query.stop()
+              }
+            }
+
+            val additionalFile = new File(outputDir, "additional.txt")
+            stringToFile(additionalFile, "6")
+            additionalFile.exists()
+
+            val outputDf = spark.read.format("text").load(outputDir.getCanonicalPath)
+              .selectExpr("CAST(value AS INT)").as[Int]
+            if (ignoreMetadata) {
+              checkDatasetUnorderly(outputDf, 1, 2, 3, 4, 5, 6)
+            } else {
+              checkDatasetUnorderly(outputDf, 1, 2, 3, 4, 5)
+            }
+          }
+        }
+      }
+    }
+  }
+
+  test("SPARK-48991: Move path initialization into try-catch block") {
+    val logAppender = new LogAppender("Assume no metadata directory.")
+    Seq(null, "", "file:tmp").foreach { path =>
+      withLogAppender(logAppender) {
+        assert(!FileStreamSink.hasMetadata(Seq(path), spark.sessionState.newHadoopConf(), conf))
+      }
+
+      assert(logAppender.loggingEvents.map(_.getMessage.getFormattedMessage).contains(
+        "Assume no metadata directory. Error while looking for metadata directory in the path:" +
+        s" $path."))
+    }
+  }
 }
 
+object PendingCommitFilesTrackingManifestFileCommitProtocol {
+  val tracking: ArrayBuffer[String] = new ArrayBuffer[String]()
+
+  def cleanPendingCommitFiles(): Unit = tracking.clear()
+  def addPendingCommitFiles(paths: Seq[String]): Unit = tracking ++= paths
+}
+
+class PendingCommitFilesTrackingManifestFileCommitProtocol(jobId: String, path: String)
+  extends ManifestFileCommitProtocol(jobId, path) {
+  import PendingCommitFilesTrackingManifestFileCommitProtocol._
+
+  override def setupJob(jobContext: JobContext): Unit = {
+    super.setupJob(jobContext)
+    cleanPendingCommitFiles()
+  }
+
+  override def onTaskCommit(taskCommit: FileCommitProtocol.TaskCommitMessage): Unit = {
+    super.onTaskCommit(taskCommit)
+    addPendingCommitFiles(taskCommit.obj.asInstanceOf[Seq[SinkFileStatus]].map(_.path))
+  }
+}
+
+@SlowSQLTest
 class FileStreamSinkV1Suite extends FileStreamSinkSuite {
   override protected def sparkConf: SparkConf =
     super
       .sparkConf
-      .set(SQLConf.USE_V1_SOURCE_READER_LIST, "csv,json,orc,text,parquet")
-      .set(SQLConf.USE_V1_SOURCE_WRITER_LIST, "csv,json,orc,text,parquet")
+      .set(SQLConf.USE_V1_SOURCE_LIST, "csv,json,orc,text,parquet")
 
   override def checkQueryExecution(df: DataFrame): Unit = {
     // Verify that MetadataLogFileIndex is being used and the correct partitioning schema has
     // been inferred
     val hadoopdFsRelations = df.queryExecution.analyzed.collect {
-      case LogicalRelation(baseRelation: HadoopFsRelation, _, _, _) => baseRelation
+      case LogicalRelationWithTable(baseRelation: HadoopFsRelation, _) => baseRelation
     }
     assert(hadoopdFsRelations.size === 1)
     assert(hadoopdFsRelations.head.location.isInstanceOf[MetadataLogFileIndex])
@@ -513,31 +726,31 @@ class FileStreamSinkV1Suite extends FileStreamSinkSuite {
     // Read with pruning, should read only files in partition dir id=1
     checkFileScanPartitions(df.filter("id = 1")) { partitions =>
       val filesToBeRead = partitions.flatMap(_.files)
-      assert(filesToBeRead.map(_.filePath).forall(_.contains("/id=1/")))
+      assert(filesToBeRead.map(_.urlEncodedPath).forall(_.contains("/id=1/")))
       assert(filesToBeRead.map(_.partitionValues).distinct.size === 1)
     }
 
     // Read with pruning, should read only files in partition dir id=1 and id=2
     checkFileScanPartitions(df.filter("id in (1,2)")) { partitions =>
       val filesToBeRead = partitions.flatMap(_.files)
-      assert(!filesToBeRead.map(_.filePath).exists(_.contains("/id=3/")))
+      assert(!filesToBeRead.map(_.urlEncodedPath).exists(_.contains("/id=3/")))
       assert(filesToBeRead.map(_.partitionValues).distinct.size === 2)
     }
   }
 }
 
+@SlowSQLTest
 class FileStreamSinkV2Suite extends FileStreamSinkSuite {
   override protected def sparkConf: SparkConf =
     super
       .sparkConf
-      .set(SQLConf.USE_V1_SOURCE_READER_LIST, "")
-      .set(SQLConf.USE_V1_SOURCE_WRITER_LIST, "")
+      .set(SQLConf.USE_V1_SOURCE_LIST, "")
 
   override def checkQueryExecution(df: DataFrame): Unit = {
     // Verify that MetadataLogFileIndex is being used and the correct partitioning schema has
     // been inferred
     val table = df.queryExecution.analyzed.collect {
-      case DataSourceV2Relation(table: FileTable, _, _) => table
+      case DataSourceV2Relation(table: FileTable, _, _, _, _) => table
     }
     assert(table.size === 1)
     assert(table.head.fileIndex.isInstanceOf[MetadataLogFileIndex])
@@ -552,7 +765,7 @@ class FileStreamSinkV2Suite extends FileStreamSinkSuite {
       }.headOption.getOrElse {
         fail(s"No FileScan in query\n${df.queryExecution}")
       }
-      func(fileScan.planInputPartitions().map(_.asInstanceOf[FilePartition]))
+      func(fileScan.planInputPartitions().map(_.asInstanceOf[FilePartition]).toImmutableArraySeq)
     }
 
     // Read without pruning
@@ -561,5 +774,21 @@ class FileStreamSinkV2Suite extends FileStreamSinkSuite {
       assert(partitions.flatMap(_.files.map(_.partitionValues)).distinct.size === 3)
     }
     // TODO: test partition pruning when file source V2 supports it.
+  }
+}
+
+/**
+ * A special file system that fails when accessing metadata log directory or using a glob path to
+ * access.
+ */
+class FailFormatCheckFileSystem extends RawLocalFileSystem {
+  override def getFileStatus(f: Path): FileStatus = {
+    if (f.getName == FileStreamSink.metadataDir) {
+      throw new IOException("cannot access metadata log")
+    }
+    if (SparkHadoopUtil.get.isGlobPath(f)) {
+      throw new IOException("fail to access a glob path")
+    }
+    super.getFileStatus(f)
   }
 }

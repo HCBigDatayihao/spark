@@ -21,12 +21,12 @@ import java.util.Locale
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
-import org.apache.spark.sql.catalyst.expressions.PredicateHelper
 import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.sql.internal.SQLConf
-import org.apache.spark.sql.test.SharedSQLContext
+import org.apache.spark.sql.test.SharedSparkSession
 import org.apache.spark.sql.types._
 import org.apache.spark.unsafe.types.UTF8String
+import org.apache.spark.util.ArrayImplicits._
 
 class FilteredScanSource extends RelationProvider {
   override def createRelation(
@@ -79,7 +79,7 @@ case class SimpleFilteredScan(from: Int, to: Int)(@transient val sparkSession: S
         Seq(c * 5 + c.toUpperCase(Locale.ROOT) * 5)
     }
 
-    FiltersPushed.list = filters
+    FiltersPushed.list = filters.toImmutableArraySeq
     ColumnsRequired.set = requiredColumns.toSet
 
     // Predicate test on integer column
@@ -133,7 +133,7 @@ object ColumnsRequired {
   var set: Set[String] = Set.empty
 }
 
-class FilteredScanSuite extends DataSourceTest with SharedSQLContext with PredicateHelper {
+class FilteredScanSuite extends DataSourceTest with SharedSparkSession {
   protected override lazy val sql = spark.sql _
 
   override def beforeAll(): Unit = {
@@ -325,7 +325,7 @@ class FilteredScanSuite extends DataSourceTest with SharedSQLContext with Predic
 
         val table = spark.table("oneToTenFiltered")
         val relation = table.queryExecution.analyzed.collectFirst {
-          case LogicalRelation(r, _, _, _) => r
+          case l: LogicalRelation => l.relation
         }.get
 
         assert(

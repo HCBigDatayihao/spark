@@ -38,10 +38,10 @@ class RandomRDDsSuite extends SparkFunSuite with MLlibTestSparkContext with Seri
       expectedNumPartitions: Int,
       expectedMean: Double,
       expectedStddev: Double,
-      epsilon: Double = 0.01) {
+      epsilon: Double = 0.01): Unit = {
     val stats = rdd.stats()
     assert(expectedSize === stats.count)
-    assert(expectedNumPartitions === rdd.partitions.size)
+    assert(expectedNumPartitions === rdd.partitions.length)
     assert(stats.mean ~== expectedMean absTol epsilon)
     assert(stats.stdev ~== expectedStddev absTol epsilon)
   }
@@ -53,10 +53,10 @@ class RandomRDDsSuite extends SparkFunSuite with MLlibTestSparkContext with Seri
       expectedNumPartitions: Int,
       expectedMean: Double,
       expectedStddev: Double,
-      epsilon: Double = 0.01) {
-    assert(expectedNumPartitions === rdd.partitions.size)
+      epsilon: Double = 0.01): Unit = {
+    assert(expectedNumPartitions === rdd.partitions.length)
     val values = new ArrayBuffer[Double]()
-    rdd.collect.foreach { vector => {
+    rdd.collect().foreach { vector => {
       assert(vector.size === expectedColumns)
       values ++= vector.toArray
     }}
@@ -72,7 +72,7 @@ class RandomRDDsSuite extends SparkFunSuite with MLlibTestSparkContext with Seri
     for ((size, numPartitions) <- List((10000, 6), (12345, 1), (1000, 101))) {
       val rdd = new RandomRDD(sc, size, numPartitions, new UniformGenerator, 0L)
       assert(rdd.count() === size)
-      assert(rdd.partitions.size === numPartitions)
+      assert(rdd.partitions.length === numPartitions)
 
       // check that partition sizes are balanced
       val partSizes = rdd.partitions.map(p =>
@@ -86,7 +86,7 @@ class RandomRDDsSuite extends SparkFunSuite with MLlibTestSparkContext with Seri
     val size = Int.MaxValue.toLong * 100L
     val numPartitions = 101
     val rdd = new RandomRDD(sc, size, numPartitions, new UniformGenerator, 0L)
-    assert(rdd.partitions.size === numPartitions)
+    assert(rdd.partitions.length === numPartitions)
     val count = rdd.partitions.foldLeft(0L) { (count, part) =>
       count + part.asInstanceOf[RandomRDDPartition[Double]].size
     }
@@ -144,7 +144,7 @@ class RandomRDDsSuite extends SparkFunSuite with MLlibTestSparkContext with Seri
 
     // mock distribution to check that partitions have unique seeds
     val random = RandomRDDs.randomRDD(sc, new MockDistro(), 1000L, 1000, 0L)
-    assert(random.collect.size === random.collect.distinct.size)
+    assert(random.collect().length === random.collect().distinct.length)
   }
 
   test("randomVectorRDD for different distributions") {

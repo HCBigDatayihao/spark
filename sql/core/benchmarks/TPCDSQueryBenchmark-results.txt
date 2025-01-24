@@ -1,0 +1,810 @@
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q1                                                  661            864         259          0.7        1432.0       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q2                                                  817            864          59          2.7         366.1       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q3                                                  234            277          31         12.7          78.7       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q4                                                 4856           5073         308          1.1         931.7       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q5                                                 1118           1254         191          5.0         198.7       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q6                                                 1228           1362         191          2.5         393.4       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q7                                                  756            776          17          6.5         154.5       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q8                                                  567            619          61          5.5         182.8       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q9                                                  907            945          55          0.0    25911119.5       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q10                                                2016           2062          65          1.0         973.5       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q11                                                1845           2147         427          2.0         489.3       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q12                                                 202            240          29          4.0         250.0       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q13                                                 852            889          33          5.8         172.7       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q14a                                               4637           4894         363          1.1         904.0       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q14b                                               3528           3702         246          1.5         687.7       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q15                                                 402            413          12          4.1         241.7       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q16                                                 750            791          37          2.1         480.0       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q17                                                1691           1730          55          2.8         359.8       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q18                                                1414           1569         219          2.5         392.5       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q19                                                 376            403          43          8.3         120.5       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q20                                                 190            204          14          8.1         123.9       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q21                                                 672            712          54         17.6          56.7       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q22                                                3351           3407          80          3.5         283.1       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q23a                                               5597           5928         467          0.9        1070.3       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q23b                                               5925           6131         291          0.9        1133.0       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q24a                                                231            263          30         14.4          69.2       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q24b                                                217            257          49         15.4          65.1       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q25                                                1468           1480          17          3.2         312.5       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q26                                                 426            443          14          8.1         123.4       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q27                                                 603            618          16          8.1         123.2       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q28                                                1402           1654         356          2.1         486.9       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q29                                                1496           1569         104          3.1         318.3       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q30                                                 453            511          72          0.7        1537.6       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q31                                                 992           1280         407          3.8         266.5       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q32                                                 247            291          37          6.2         161.2       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q33                                                 407            441          28         12.7          78.7       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q34                                                 409            425          20          7.5         133.6       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q35                                                1442           1460          26          1.4         696.3       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q36                                                 570            582          20          5.2         191.8       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q37                                                 896            901           6         14.8          67.5       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q38                                                 888           1151         371          5.9         170.5       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q39a                                               1533           1756         315          7.7         129.6       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q39b                                               1514           1748         331          7.8         127.9       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q40                                                 355            377          20          4.7         212.2       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q41                                                 166            184          10          0.1        9202.5       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q42                                                 151            163          13         19.6          51.0       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q43                                                 306            328          16          9.6         103.7       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q44                                                 338            347           9          8.6         116.5       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q45                                                 187            214          28          5.1         194.3       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q46                                                 471            491          21          6.6         151.3       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q47                                                1780           1899         168          1.7         599.2       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q48                                                 937            945           7          5.3         190.2       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q49                                                 728            753          41          7.7         129.6       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q50                                                 754            786          28          4.3         232.5       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q51                                                2470           2795         459          1.5         672.7       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q52                                                 151            158           6         19.7          50.8       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q53                                                 299            311          23          9.9         100.5       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q54                                                1292           1341          70          4.1         244.7       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q55                                                 169            186          14         17.6          56.8       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q56                                                 491            507          11         10.5          94.9       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q57                                                1032           1203         241          1.5         674.1       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q58                                                 509            580          99         10.1          99.3       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q59                                                 753            754           2          3.9         255.0       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q60                                                 581            692         167          8.9         112.2       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q61                                                 578            605          52          5.4         185.1       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q62                                                 176            186           4          4.5         221.7       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q63                                                 320            351          28          9.3         107.7       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q64                                                2602           2865         372          2.7         376.0       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q65                                                 603            668          53          4.9         202.9       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q66                                                 538            600          82          4.3         232.1       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q67                                                5377           5515         195          0.6        1809.8       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q68                                                 495            550          38          6.3         159.2       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q69                                                1742           1842         140          1.2         841.5       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q70                                                 651            667          14          4.5         220.3       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q71                                                 435            455          16         12.0          83.4       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q72                                              123701         123925         317          0.1        8059.8       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q73                                                 336            373          31          9.1         109.7       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q74                                                1419           1584         233          2.7         376.3       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q75                                                1665           1951         404          3.4         295.6       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q76                                                 358            369          11         14.3          69.8       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q77                                                 711            859         128          7.9         126.6       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q78                                                2705           2843         195          2.1         481.7       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q79                                                 484            492           8          6.3         158.1       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q80                                                1533           1855         455          3.7         271.6       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q81                                                 364            447          82          1.0         991.9       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q82                                                1176           1196          27         12.5          79.9       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q83                                                 323            348          20          1.8         542.4       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q84                                                 742            767          28          3.2         313.6       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q85                                                1817           2120         428          1.6         641.1       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q86                                                 210            226           9          3.8         259.8       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q87                                                 919           1068         211          5.7         176.3       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q88                                                1471           1642         243          2.0         494.6       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q89                                                 313            362          62          9.5         105.5       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q90                                                 145            165          20          5.6         178.3       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q91                                                 388            429          29          5.9         169.3       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q92                                                 152            173          17          5.3         188.1       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q93                                                 501            515          10          6.3         158.3       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q94                                                 367            387          12          2.3         436.2       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q95                                                5374           5470         137          0.2        6382.2       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q96                                                 186            208          19         16.0          62.6       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q97                                                1318           1354          51          3.3         300.1       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q98                                                 304            334          33          9.8         102.3       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q99                                                 310            330          19          4.9         205.2       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q5a-v2.7                                           1498           1674         250          3.8         266.2       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q6-v2.7                                             980           1001          18          3.2         314.0       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q10a-v2.7                                          1863           2003         199          1.1         899.7       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q11-v2.7                                           1811           2162         497          2.1         480.2       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q12-v2.7                                            140            162          24          5.8         173.4       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q14-v2.7                                           3748           3965         307          1.4         730.7       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q14a-v2.7                                          7129           7256         179          0.7        1389.8       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q18a-v2.7                                          2101           2292         270          1.7         583.3       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q20-v2.7                                            162            182          16          9.5         105.7       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q22-v2.7                                          14202          14286         118          0.8        1199.9       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q22a-v2.7                                          2164           2288         176          5.5         182.9       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q24-v2.7                                            254            278          26         13.1          76.2       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q27a-v2.7                                          1449           1664         304          3.4         296.2       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q34-v2.7                                            404            415          11          7.6         131.9       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q35-v2.7                                           1433           1462          41          1.4         691.8       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q35a-v2.7                                          1346           1394          68          1.5         650.0       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q36a-v2.7                                           575            607          44          5.2         193.6       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q47-v2.7                                           1841           2000         226          1.6         619.6       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q49-v2.7                                            620            682          63          9.1         110.4       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q51a-v2.7                                         14407          14835         605          0.3        3923.7       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q57-v2.7                                            966           1157         271          1.6         630.8       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q64-v2.7                                           2494           2897         570          2.8         360.3       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q67a-v2.7                                          7449           7556         152          0.4        2507.3       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q70a-v2.7                                           713            751          47          4.1         241.6       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q72-v2.7                                         121071         121592         736          0.1        7888.4       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q74-v2.7                                           1213           1347         190          3.1         321.5       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q75-v2.7                                           1379           1739         509          4.1         244.7       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q77a-v2.7                                          1231           1282          72          4.6         219.2       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q78-v2.7                                           2218           2579         511          2.5         395.0       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q80a-v2.7                                          1873           1912          56          3.0         331.7       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q86a-v2.7                                           232            262          24          3.5         286.7       1.0X
+
+OpenJDK 64-Bit Server VM 17.0.13+11-LTS on Linux 6.8.0-1017-azure
+AMD EPYC 7763 64-Core Processor
+TPCDS:                                    Best Time(ms)   Avg Time(ms)   Stdev(ms)    Rate(M/s)   Per Row(ns)   Relative
+------------------------------------------------------------------------------------------------------------------------
+q98-v2.7                                            285            300          12         10.4          95.8       1.0X
+

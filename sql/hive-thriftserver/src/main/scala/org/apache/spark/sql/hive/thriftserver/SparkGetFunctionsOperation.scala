@@ -18,9 +18,8 @@
 package org.apache.spark.sql.hive.thriftserver
 
 import java.sql.DatabaseMetaData
-import java.util.UUID
 
-import scala.collection.JavaConverters.seqAsJavaListConverter
+import scala.jdk.CollectionConverters._
 
 import org.apache.hadoop.hive.ql.security.authorization.plugin.{HiveOperationType, HivePrivilegeObjectUtils}
 import org.apache.hive.service.cli._
@@ -28,46 +27,41 @@ import org.apache.hive.service.cli.operation.GetFunctionsOperation
 import org.apache.hive.service.cli.operation.MetadataOperation.DEFAULT_HIVE_CATALOG
 import org.apache.hive.service.cli.session.HiveSession
 
-import org.apache.spark.internal.Logging
-import org.apache.spark.sql.SQLContext
-import org.apache.spark.util.{Utils => SparkUtils}
+import org.apache.spark.internal.{Logging, LogKeys, MDC}
+import org.apache.spark.sql.SparkSession
 
 /**
  * Spark's own GetFunctionsOperation
  *
- * @param sqlContext SQLContext to use
+ * @param session SparkSession to use
  * @param parentSession a HiveSession from SessionManager
  * @param catalogName catalog name. null if not applicable
  * @param schemaName database name, null or a concrete database name
  * @param functionName function name pattern
  */
 private[hive] class SparkGetFunctionsOperation(
-    sqlContext: SQLContext,
+    val session: SparkSession,
     parentSession: HiveSession,
     catalogName: String,
     schemaName: String,
     functionName: String)
-  extends GetFunctionsOperation(parentSession, catalogName, schemaName, functionName) with Logging {
-
-  private var statementId: String = _
-
-  override def close(): Unit = {
-    super.close()
-    HiveThriftServer2.listener.onOperationClosed(statementId)
-  }
+  extends GetFunctionsOperation(parentSession, catalogName, schemaName, functionName)
+  with SparkOperation
+  with Logging {
 
   override def runInternal(): Unit = {
-    statementId = UUID.randomUUID().toString
     // Do not change cmdStr. It's used for Hive auditing and authorization.
-    val cmdStr = s"catalog : $catalogName, schemaPattern : $schemaName"
-    val logMsg = s"Listing functions '$cmdStr, functionName : $functionName'"
-    logInfo(s"$logMsg with $statementId")
+    val cmdMDC = log"catalog : ${MDC(LogKeys.CATALOG_NAME, catalogName)}, " +
+      log"schemaPattern : ${MDC(LogKeys.DATABASE_NAME, schemaName)}"
+    val logMDC = log"Listing functions '" + cmdMDC +
+      log", functionName : ${MDC(LogKeys.FUNCTION_NAME, functionName)}'"
+    logInfo(logMDC + log" with ${MDC(LogKeys.STATEMENT_ID, statementId)}")
     setState(OperationState.RUNNING)
     // Always use the latest class loader provided by executionHive's state.
-    val executionHiveClassLoader = sqlContext.sharedState.jarClassLoader
+    val executionHiveClassLoader = session.sharedState.jarClassLoader
     Thread.currentThread().setContextClassLoader(executionHiveClassLoader)
 
-    val catalog = sqlContext.sessionState.catalog
+    val catalog = session.sessionState.catalog
     // get databases for schema pattern
     val schemaPattern = convertSchemaPattern(schemaName)
     val matchingDbs = catalog.listDatabases(schemaPattern)
@@ -76,14 +70,14 @@ private[hive] class SparkGetFunctionsOperation(
     if (isAuthV2Enabled) {
       // authorize this call on the schema objects
       val privObjs =
-        HivePrivilegeObjectUtils.getHivePrivDbObjects(seqAsJavaListConverter(matchingDbs).asJava)
-      authorizeMetaGets(HiveOperationType.GET_FUNCTIONS, privObjs, cmdStr)
+        HivePrivilegeObjectUtils.getHivePrivDbObjects(matchingDbs.asJava)
+      authorizeMetaGets(HiveOperationType.GET_FUNCTIONS, privObjs, cmdMDC.message)
     }
 
-    HiveThriftServer2.listener.onStatementStart(
+    HiveThriftServer2.eventManager.onStatementStart(
       statementId,
       parentSession.getSessionHandle.getSessionId.toString,
-      logMsg,
+      logMDC.message,
       statementId,
       parentSession.getUsername)
 
@@ -96,20 +90,15 @@ private[hive] class SparkGetFunctionsOperation(
               DEFAULT_HIVE_CATALOG, // FUNCTION_CAT
               db, // FUNCTION_SCHEM
               funcIdentifier.funcName, // FUNCTION_NAME
-              info.getUsage, // REMARKS
+              s"Usage: ${info.getUsage}\nExtended Usage:${info.getExtended}", // REMARKS
               DatabaseMetaData.functionResultUnknown.asInstanceOf[AnyRef], // FUNCTION_TYPE
               info.getClassName) // SPECIFIC_NAME
             rowSet.addRow(rowData);
         }
       }
       setState(OperationState.FINISHED)
-    } catch {
-      case e: HiveSQLException =>
-        setState(OperationState.ERROR)
-        HiveThriftServer2.listener.onStatementError(
-          statementId, e.getMessage, SparkUtils.exceptionString(e))
-        throw e
-    }
-    HiveThriftServer2.listener.onStatementFinish(statementId)
+    } catch onError()
+
+    HiveThriftServer2.eventManager.onStatementFinish(statementId)
   }
 }
